@@ -88,7 +88,7 @@
         "imageSku": "7.2",
 
         "!!!TODO_REPLACE_IT!!!": "first-iap-template → master",
-        "resourceUrlPrefix": "https://raw.githubusercontent.com/accelplatform/azure-resource-manager-template/first-iap-template/standard-1ap-sqldatabase/"
+        "resourceUrlPrefix": "https://raw.githubusercontent.com/accelplatform/azure-resource-manager-template/iap-first-template/standard-1ap-sqldatabase/"
     },
     "resources": [{
             "name": "[variables('ap1PublicIPAddressName')]",
