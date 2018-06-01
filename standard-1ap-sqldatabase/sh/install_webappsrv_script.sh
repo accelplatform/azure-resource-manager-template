@@ -13,7 +13,7 @@ firewall-cmd --reload
 # Install Apache httpd 2.4.
 yum install httpd-2.4.6-80.el7.x86_64 -y
 mv /etc/httpd/conf/httpd.conf /etc/httpd/conf/httpd.conf.orig
-wget -q -O /etc/httpd/conf/httpd.conf $1sh/httpd.conf
+wget -q -O /etc/httpd/conf/httpd.conf $1resources/httpd.conf
 /usr/sbin/setsebool httpd_can_network_connect 1
 
 # Install JDK 8.
@@ -31,7 +31,7 @@ yum install openssl-devel glibc-devel -y
 wget -q http://caucho.com/download/rpm-6.8/4.0.56/x86_64/resin-pro-4.0.56-1.x86_64.rpm
 rpm -ivh resin-pro-4.0.56-1.x86_64.rpm
 mv /etc/resin/resin.properties /etc/resin/resin.properties.orig
-wget -q -O /etc/resin/resin.properties $1sh/resin.properties
+wget -q -O /etc/resin/resin.properties $1resources/resin.properties
 mkdir /var/resin/tmp
 sed -i -e "s*JAVA=\"/usr/bin/java\"*JAVA=\$JAVA_HOME*g" /bin/resinctl
 ### 制限事項 rpm のインストールは対応してない
