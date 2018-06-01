@@ -18,25 +18,17 @@ set -x -v -e
 # Install some tools.
 yum install wget unzip vim -y
 
-#################################################
-#   Install Web server and application server   #
-#################################################
+# Install Web server and application server
 sh install_webappsrv_script.sh $1
 
-#####################
-#   mount storage   #
-#####################
+# Mount storage
 sh mount_storage_script.sh $1 $2 $3 $4 $5 $6
 
-#############################
-#   Prepare DB connecting   #
-#############################
+# Prepare DB connecting
 sh prepare_db_connect_script.sh $1 $2 $7 $8 $9 $10
 
 
-##################
-#   Create WAE   #
-##################
+# Create WAE
 sh deploy_war_script.sh $1
 
 
