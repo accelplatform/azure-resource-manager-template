@@ -1,0 +1,339 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "vmAdminUsername": {
+            "type": "string",
+            "defaultValue": "imart",
+            "metadata": {
+                "description": "User name for the Virtual Machine."
+            }
+        },
+        "vmAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the Virtual Machine."
+            }
+        },
+        "vmSize": {
+            "type": "string",
+            "defaultValue": "Standard_A2_v2",
+            "allowedValues": [
+                "Standard_A2_v2",
+                "Standard_A4_v2",
+                "Standard_A2",
+                "Standard_A4",
+                "Standard_A2m_v2",
+                "Standard_A4m_v2",
+                "Standard_E4s_v3"
+            ],
+            "metadata": {
+                "description": "Size for application server virtual machine."
+            }
+        },
+        "dbName": {
+            "type": "string",
+            "defaultValue": "iapdb",
+            "metadata": {
+                "description": "Database name for SQL Database"
+            }
+        },
+        "dbAdminUserName": {
+            "type": "string",
+            "defaultValue": "imart",
+            "metadata": {
+                "description": "User name for SQL Database server."
+            }
+        },
+        "dbAdminPassword": {
+            "type": "securestring",
+            "metadata": {
+                "description": "Password for the SQL Database server."
+            }
+        }
+    },
+    "variables": {
+        "location": "[resourceGroup().location]",
+
+        "virtualNetworkName": "vnet",
+        "addressPrefix": "192.168.0.0/16",
+        "subnetName": "subnet",
+        "subnetPrefix": "192.168.1.0/24",
+        "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
+
+        "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'storage')]",
+        "storageAccountType":"Standard_LRS",
+        "fileShareName": "iap-storage",
+        "storageMountPath": "/mnt/AzureFiles",
+
+        "containerImage": "microsoft/azure-cli",
+        "containerCpuCores": "1.0",
+        "containerMemoryInGB": "1.5",
+        "containerGroupName": "createshare-containergroup",
+        "containerName": "createshare",
+        "containerInstanceLocation": "westus",
+
+        "dbServerName": "[concat(uniquestring(resourceGroup().id), '-dbsrv')]",
+        "dbEdition": "Standard",
+
+        "ap1VmName": "ap1",
+        "ap1DataDiskName": "[concat(variables('ap1VmName'), '_datadisk')]",
+        "ap1NicName": "[concat(variables('ap1VmName'), '_nic')]",
+        "ap1PrivateIpAddress": "192.168.1.5",
+        "ap1PublicIPAddressName": "[concat(variables('ap1VmName'), '_publicip')]",
+        "ap1CustomScriptName": "[concat(variables('ap1VmName'), '/CustomScript')]",
+        "vmSize": "[parameters('vmSize')]",
+        "imagePublisher": "RedHat",
+        "imageOffer": "RHEL",
+        "imageSku": "7.2",
+
+        "!!!TODO_REPLACE_IT!!!": "first-iap-template → master",
+        "resourceUrlPrefix": "https://raw.githubusercontent.com/accelplatform/azure-resource-manager-template/first-iap-template/standard-1ap-sqldatabase/"
+    },
+    "resources": [{
+            "name": "[variables('ap1PublicIPAddressName')]",
+            "type": "Microsoft.Network/publicIPAddresses",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "publicIPAllocationMethod": "Dynamic"
+            }
+        },
+        {
+            "name": "[variables('virtualNetworkName')]",
+            "type": "Microsoft.Network/virtualNetworks",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "addressSpace": {
+                    "addressPrefixes": [
+                        "[variables('addressPrefix')]"
+                    ]
+                },
+                "subnets": [{
+                    "name": "[variables('subnetName')]",
+                    "properties": {
+                        "addressPrefix": "[variables('subnetPrefix')]",
+                        "serviceEndpoints": [{
+                                "service": "Microsoft.Storage"
+                            },
+                            {
+                                "service": "Microsoft.Sql"
+                            }
+                        ]
+                    }
+                }]
+            }
+        },
+        {
+            "type": "Microsoft.Sql/servers",
+            "name": "[variables('dbServerName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "administratorLogin": "[parameters('dbAdminUserName')]",
+                "administratorLoginPassword": "[parameters('dbAdminPassword')]",
+                "version": "12.0"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Sql/servers/databases",
+            "name": "[concat(variables('dbServerName'), '/', parameters('dbName'))]",
+            "apiVersion": "2017-10-01-preview",
+            "location": "[variables('location')]",
+            "properties": {
+                "collation": "Japanese_XJIS_100_CS_AS_KS_WS",
+                "edition": "[variables('dbEdition')]"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('dbServerName'))]"
+            ]
+        },
+        {
+            "name": "[concat(variables('dbServerName'), '/vnetRule')]",
+            "type": "Microsoft.Sql/servers/virtualNetworkRules",
+            "apiVersion": "2015-05-01-preview",
+            "properties": {
+                "virtualNetworkSubnetId": "[variables('subnetResourceId')]",
+                "ignoreMissingVnetServiceEndpoint": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('dbServerName'))]"
+            ]
+        },
+        {
+            "name": "[variables('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2017-10-01",
+            "sku": {
+                "name": "[variables('storageAccountType')]"
+            },
+            "kind": "StorageV2",
+            "location": "[variables('location')]",
+            "properties": {
+                "supportsHttpsTrafficOnly": false,
+                "accessTier": "Hot",
+                "encryption": {
+                    "services": {
+                        "blob": {
+                            "enabled": false
+                        },
+                        "file": {
+                            "enabled": false
+                        }
+                    },
+                    "keySource": "Microsoft.Storage"
+                },
+                "networkAcls": {
+                    "defaultAction": "Allow",
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [{
+                        "id": "[variables('subnetResourceId')]",
+                        "action": "Allow"
+                    }]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+            ]
+        },
+        {
+            "name": "[variables('containerGroupName')]",
+            "type": "Microsoft.ContainerInstance/containerGroups",
+            "apiVersion": "2018-04-01",
+            "location": "[variables('containerInstanceLocation')]",
+            "properties": {
+                "containers": [{
+                    "name": "[variables('containerName')]",
+                    "properties": {
+                        "image": "[variables('containerImage')]",
+                        "command": [
+                            "az",
+                            "storage",
+                            "share",
+                            "create",
+                            "--name",
+                            "[variables('fileShareName')]",
+                            "--quota",
+                            "50"
+                        ],
+                        "environmentVariables": [{
+                                "name": "AZURE_STORAGE_KEY",
+                                "value": "[listKeys(variables('storageAccountName'),'2017-10-01').keys[0].value]"
+                            },
+                            {
+                                "name": "AZURE_STORAGE_ACCOUNT",
+                                "value": "[variables('storageAccountName')]"
+                            }
+                        ],
+                        "resources": {
+                            "requests": {
+                                "cpu": "[variables('containerCpuCores')]",
+                                "memoryInGB": "[variables('containerMemoryInGB')]"
+                            }
+                        }
+                    }
+                }],
+                "restartPolicy": "OnFailure",
+                "osType": "Linux"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', variables('storageAccountName'))]"
+            ]
+        },
+        {
+            "name": "[variables('ap1NicName')]",
+            "type": "Microsoft.Network/networkInterfaces",
+            "apiVersion": "2018-02-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "ipConfigurations": [{
+                    "name": "ipconfig1",
+                    "properties": {
+                        "privateIPAllocationMethod": "Static",
+                        "privateIPAddress": "[variables('ap1PrivateIpAddress')]",
+                        "publicIPAddress": {
+                            "id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('ap1PublicIPAddressName'))]"
+                        },
+                        "subnet": {
+                            "id": "[variables('subnetResourceId')]"
+                        }
+                    }
+                }]
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/publicIPAddresses', variables('ap1PublicIPAddressName'))]",
+                "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]"
+            ]
+        },
+        {
+            "name": "[variables('ap1VmName')]",
+            "type": "Microsoft.Compute/virtualMachines",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "hardwareProfile": {
+                    "vmSize": "[variables('vmSize')]"
+                },
+                "osProfile": {
+                    "computerName": "[variables('ap1VmName')]",
+                    "adminUsername": "[parameters('vmAdminUsername')]",
+                    "adminPassword": "[parameters('vmAdminPassword')]"
+                },
+                "storageProfile": {
+                    "imageReference": {
+                        "publisher": "[variables('imagePublisher')]",
+                        "offer": "[variables('imageOffer')]",
+                        "sku": "[variables('imageSku')]",
+                        "version": "latest"
+                    },
+                    "dataDisks": [{
+                        "name": "[variables('ap1DataDiskName')]",
+                        "diskSizeGB": 32,
+                        "lun": 0,
+                        "createOption": "Empty"
+                    }]
+                },
+                "networkProfile": {
+                    "networkInterfaces": [{
+                        "id": "[resourceId('Microsoft.Network/networkInterfaces',variables('ap1NicName'))]"
+                    }]
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Network/networkInterfaces', variables('ap1NicName'))]"
+            ]
+        },
+        {
+            "name": "[variables('ap1CustomScriptName')]",
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "apiVersion": "2017-12-01",
+            "location": "[variables('location')]",
+            "properties": {
+                "publisher": "Microsoft.Azure.Extensions",
+                "type": "CustomScript",
+                "typeHandlerVersion": "2.0",
+                "autoUpgradeMinorVersion": true,
+                "settings": {
+                    "fileUris": [
+                        "[concat(variables('resourceUrlPrefix'), 'sh/azure_custom_script.sh')]",
+                        "[concat(variables('resourceUrlPrefix'), 'sh/install_webappsrv_script.sh')]",
+                        "[concat(variables('resourceUrlPrefix'), 'sh/mount_storage_script.sh')]",
+                        "[concat(variables('resourceUrlPrefix'), 'sh/prepare_db_connect_script.sh')]",
+                        "[concat(variables('resourceUrlPrefix'), 'sh/deploy_war_script.sh')]"
+                    ],
+                    "commandToExecute": "[concat('bash azure_custom_script.sh ', variables('resourceUrlPrefix'), ' ', parameters('vmAdminUsername'), ' ', variables('storageAccountName'), ' ', listKeys(variables('storageAccountName'),'2017-10-01').keys[0].value, ' ', variables('fileShareName'), ' ', variables('storageMountPath'), ' ', variables('dbServerName'), ' ', parameters('dbName'), ' ', parameters('dbAdminUserName'), ' ', parameters('dbAdminPassword'), ' >& /home/', parameters('vmAdminUsername'), '/azure_custom_script.log')]"
+                }
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Compute/virtualMachines', variables('ap1VmName'))]",
+                "[resourceId('Microsoft.ContainerInstance/containerGroups', variables('containerGroupName'))]",
+                "[resourceId('Microsoft.Sql/servers/databases', variables('dbServerName'), parameters('dbName'))]"
+            ]
+        }
+    ],
+    "outputs": {}
+}

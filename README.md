@@ -1,2 +1,3 @@
 # azure-resource-manager-template
-Accel Platform Template for Azure Resource Manager
+
+intra-mart Accel Platform Template for Azure Resource Manager
