@@ -1,10 +1,9 @@
 #!/bin/bash
+
 echo "************************************************"
 echo "   deploy_war_script.sh"
 echo "************************************************"
-
 set -x -v -e
-source env.sh
 
 # install ant
 yum install ant -y
