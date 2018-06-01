@@ -17,7 +17,7 @@ tar -zxf sqljdbc_4.2.8112.200_jpn.tar.gz
 cp sqljdbc_4.2/jpn/jre8/sqljdbc42.jar /var/resin/webapp-jars/sqljdbc42.jar
 
 # Write an example for resin-web.xml.
-wget -q -O resin-web.xml.example $1resin-web.xml.example
+wget -q -O resin-web.xml.example $1resources/resin-web.xml.example
 sed -i -e "s/\%SERVER\_NAME\%/$3/g" resin-web.xml.example
 sed -i -e "s/\%DB\_NAME\%/$4/g" resin-web.xml.example
 sed -i -e "s/\%USER\%/$5/g" resin-web.xml.example

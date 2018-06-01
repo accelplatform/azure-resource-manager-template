@@ -20,6 +20,6 @@ echo "//$3.file.core.windows.net/$5 $6 cifs nofail,vers=3.0,username=$3,password
 mount -a
 
 # Write an example for storage-config.xml
-wget -q $1storage-config.xml.example
+wget -q $1resources/storage-config.xml.example
 sed -i -e "s*\%STORAGE\_PATH\%*$6*g" storage-config.xml.example
 mv storage-config.xml.example storage-config.xml

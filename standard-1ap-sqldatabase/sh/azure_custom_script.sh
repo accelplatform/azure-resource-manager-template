@@ -21,7 +21,7 @@ yum install wget unzip vim -y
 #################################################
 #   Install Web server and application server   #
 #################################################
-sh install_webappsrv_script.sh
+sh install_webappsrv_script.sh $1
 
 #####################
 #   mount storage   #
@@ -37,7 +37,7 @@ sh prepare_db_connect_script.sh $1 $2 $7 $8 $9 $10
 ##################
 #   Create WAE   #
 ##################
-sh deploy_war_script.sh
+sh deploy_war_script.sh $1
 
 
 echo ""

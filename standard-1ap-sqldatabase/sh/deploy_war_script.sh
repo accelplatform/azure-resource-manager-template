@@ -1,4 +1,5 @@
 #!/bin/bash
+# $1  = Resouce url prefix
 
 echo "************************************************"
 echo "   deploy_war_script.sh"
@@ -9,7 +10,7 @@ set -x -v -e
 yum install ant -y
 
 # Create sample WAR file and static contents.
-wget -q ${RESOURCE_URL_PREFIX}juggling_ant.zip
+wget -q $1sh/juggling_ant.zip
 unzip juggling_ant.zip -d juggling_ant
 mv resin-web.xml juggling_ant/project/resin-web.xml
 mv storage-config.xml juggling_ant/project/conf/storage-config.xml
