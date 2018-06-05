@@ -13,23 +13,23 @@
 echo "************************************************"
 echo "   azure_custom_script.sh"
 echo "************************************************"
-set -x -v -e
+set -x -v -e -u
 
 # Install some tools.
 yum install wget unzip vim -y
 
 # Install Web server and application server
-sh install_webappsrv_script.sh $1
+sh install_webappsrv_script.sh ${1}
 
 # Mount storage
-sh mount_storage_script.sh $1 $2 $3 $4 $5 $6
+sh mount_storage_script.sh ${1} ${2} ${3} ${4} ${5} ${6}
 
 # Prepare DB connecting
-sh prepare_db_connect_script.sh $1 $2 $7 $8 $9 $10
+sh prepare_db_connect_script.sh ${1} ${2} ${7} ${8} ${9} ${10}
 
 
 # Create WAE
-sh deploy_war_script.sh $1
+sh deploy_war_script.sh ${1}
 
 
 echo ""

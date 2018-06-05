@@ -4,13 +4,13 @@
 echo "************************************************"
 echo "   deploy_war_script.sh"
 echo "************************************************"
-set -x -v -e
+set -x -v -e -u
 
 # install ant
 yum install ant -y
 
 # Create sample WAR file and static contents.
-wget -q $1resources/juggling_ant.zip
+wget -q ${1}resources/juggling_ant.zip
 unzip juggling_ant.zip -d juggling_ant
 mv resin-web.xml juggling_ant/project/resin-web.xml
 mv storage-config.xml juggling_ant/project/conf/storage-config.xml
