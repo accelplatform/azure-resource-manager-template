@@ -9,7 +9,7 @@
 echo "************************************************"
 echo "   install_webappsrv_script.sh"
 echo "************************************************"
-set -x -v -e -u
+set -x -v -e
 
 # Deploy SQL Server JDBC driver.
 wget -q https://download.microsoft.com/download/5/D/2/5D2F2C81-405A-44BF-A1CD-C02236C1A9E6/sqljdbc_4.2.8112.200_jpn.tar.gz

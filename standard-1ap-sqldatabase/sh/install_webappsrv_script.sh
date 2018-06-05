@@ -4,7 +4,7 @@
 echo "************************************************"
 echo "   install_webappsrv_script.sh"
 echo "************************************************"
-set -x -v -e -u
+set -x -v -e
 
 # Open port 80.
 firewall-cmd --permanent --add-port=80/tcp

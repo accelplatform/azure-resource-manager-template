@@ -13,7 +13,7 @@
 echo "************************************************"
 echo "   azure_custom_script.sh"
 echo "************************************************"
-set -x -v -e -u
+set -x -v -e
 
 # Install some tools.
 yum install wget unzip vim -y

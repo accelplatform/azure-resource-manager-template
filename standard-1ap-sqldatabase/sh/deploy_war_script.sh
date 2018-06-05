@@ -4,7 +4,7 @@
 echo "************************************************"
 echo "   deploy_war_script.sh"
 echo "************************************************"
-set -x -v -e -u
+set -x -v -e
 
 # install ant
 yum install ant -y

@@ -9,7 +9,7 @@
 echo "************************************************"
 echo "   mount_storage_script.sh"
 echo "************************************************"
-set -x -v -e -u
+set -x -v -e
 
 # Install some tools.
 yum install samba-client samba-common cifs-utils -y
