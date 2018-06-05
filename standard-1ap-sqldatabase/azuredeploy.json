@@ -75,6 +75,8 @@
 
         "dbServerName": "[concat(uniquestring(resourceGroup().id), '-dbsrv')]",
         "dbEdition": "Standard",
+        "dbRequestedServiceObjectiveName": "S2",
+        "dbMaxSizeBytes": "53687091200",
 
         "ap1VmName": "ap1",
         "ap1DataDiskName": "[concat(variables('ap1VmName'), '_datadisk')]",
@@ -142,11 +144,13 @@
         {
             "type": "Microsoft.Sql/servers/databases",
             "name": "[concat(variables('dbServerName'), '/', parameters('dbName'))]",
-            "apiVersion": "2017-10-01-preview",
+            "apiVersion": "2014-04-01",
             "location": "[variables('location')]",
             "properties": {
                 "collation": "Japanese_XJIS_100_CS_AS_KS_WS",
-                "edition": "[variables('dbEdition')]"
+                "edition": "[variables('dbEdition')]",
+                "requestedServiceObjectiveName": "[variables('dbRequestedServiceObjectiveName')]",
+                "maxSizeBytes": "[variables('dbMaxSizeBytes')]"
             },
             "dependsOn": [
                 "[resourceId('Microsoft.Sql/servers', variables('dbServerName'))]"
