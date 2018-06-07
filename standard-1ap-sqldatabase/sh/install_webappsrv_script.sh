@@ -33,7 +33,9 @@ rpm -ivh resin-pro-4.0.56-1.x86_64.rpm
 mv /etc/resin/resin.properties /etc/resin/resin.properties.orig
 wget -q -O /etc/resin/resin.properties ${1}resources/resin.properties
 mkdir /var/resin/tmp
-sed -i -e "s*JAVA=\"/usr/bin/java\"*JAVA=\$JAVA_HOME*g" /bin/resinctl
+sed -i -e "s*JAVA=\"/usr/bin/java\"*JAVA=\${JAVA_HOME}*g" /bin/resinctl
+sed -i -e "s*JAVA=\"/usr/bin/java\"*JAVA=\"${JAVA_HOME}/bin/java\"*g" /usr/local/share/resin-4.0.56/bin/resinctl
+sed -i -e "s*JAVA=\"/usr/bin/java\"*JAVA=\"${JAVA_HOME}/bin/java\"*g" /etc/init.d/resin
 ### 制限事項 rpm のインストールは対応してない
 ### https://www.intra-mart.jp/download/product/iap/iap_release_note/texts/limitations/resin.html#common-resin-debrpm
 
