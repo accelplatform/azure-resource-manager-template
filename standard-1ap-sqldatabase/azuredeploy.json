@@ -61,7 +61,8 @@
         "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', variables('virtualNetworkName'), variables('subnetName'))]",
 
         "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'storage')]",
-        "storageAccountType": "Standard_LRS",
+        "storageAccountKind": "StorageV2",
+        "storageAccountType": "Premium_LRS",
         "storageFileShareName": "iap-storage",
         "storageMountPath": "/mnt/AzureFiles",
         "storageQuota": "50",
@@ -175,7 +176,7 @@
             "sku": {
                 "name": "[variables('storageAccountType')]"
             },
-            "kind": "StorageV2",
+            "kind": "[variables('storageAccountKind')]",
             "location": "[variables('location')]",
             "properties": {
                 "supportsHttpsTrafficOnly": false,
